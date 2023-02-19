@@ -1,6 +1,10 @@
 package com.naturalprogrammer;
 
+import io.jbock.util.Either;
+
 import java.util.Optional;
+
+import static com.naturalprogrammer.EitherUtils.of;
 
 record User(int id) {}
 record Account(User user) {}
@@ -15,6 +19,10 @@ interface AccountRepository {
 
 class UserNotFoundException extends RuntimeException {}
 class AccountNotFoundException extends RuntimeException {}
+
+interface Error {}
+record UserNotFound() implements Error {}
+record AccountNotFound() implements Error {}
 
 public class AccountFinder {
 
@@ -37,4 +45,10 @@ public class AccountFinder {
         return accountRepository.findByUser(user).orElseThrow(AccountNotFoundException::new);
     }
 
+    public Either<Error, Account> findAccountByUserIdReturningEither(int userId) {
+        return EitherUtils
+                .<Error, User>of(userRepository.findById(userId), UserNotFound::new)
+                .flatMap(user -> of(accountRepository.findByUser(user), AccountNotFound::new));
+    }
 }
+
