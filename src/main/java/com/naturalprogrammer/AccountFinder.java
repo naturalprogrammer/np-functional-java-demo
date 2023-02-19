@@ -13,6 +13,9 @@ interface AccountRepository {
     Optional<Account> findByUser(User user);
 }
 
+class UserNotFoundException extends RuntimeException {}
+class AccountNotFoundException extends RuntimeException {}
+
 public class AccountFinder {
 
     private final UserRepository userRepository;
@@ -28,4 +31,10 @@ public class AccountFinder {
                 .findById(userId)
                 .flatMap(accountRepository::findByUser);
     }
+
+    public Account getAccountByUserId(int userId) {
+        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        return accountRepository.findByUser(user).orElseThrow(AccountNotFoundException::new);
+    }
+
 }
